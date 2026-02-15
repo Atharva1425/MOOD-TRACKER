@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Mood Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background: #f0f8ff;
+        }
+        h1 { color: #333; }
+        input, select, button { padding: 10px; margin: 10px; font-size: 16px; }
+        #history { margin-top: 20px; text-align: left; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <h1>🎯 Smart Mood Tracker</h1>
+
+    <label for="mood">Select your current mood:</label>
+    <select id="mood">
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="tired">Tired</option>
+        <option value="stressed">Stressed</option>
+        <option value="neutral">Neutral</option>
+    </select>
+    <br>
+    <button onclick="saveMood()">Submit Mood</button>
+
+    <h2>💡 Recommendation:</h2>
+    <p id="recommendation">Your suggestion will appear here</p>
+
+    <h2>📊 Mood History:</h2>
+    <div id="history"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
