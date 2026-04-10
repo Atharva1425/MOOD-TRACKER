@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DeskFocus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="background-glow background-glow-left"></div>
+    <div class="background-glow background-glow-right"></div>
+
+    <main class="app-shell">
+      <header class="topbar reveal">
+        <div class="brand-block">
+          <p class="eyebrow">DeskFocus</p>
+          <h1>Track the moment your phone drifts back into view.</h1>
+          <p class="lede">
+            In-browser AI watches your workspace, marks distraction bursts, and
+            keeps session history ready for local or server sync.
+          </p>
+        </div>
+
+        <div class="topbar-tools">
+          <div class="sync-chip">
+            <span class="sync-dot" id="backendDot"></span>
+            <span id="backendStatus">Checking backend sync...</span>
+          </div>
+
+          <div class="tool-card">
+            <div class="tool-copy">
+              <span class="tool-label">Detector Mode</span>
+              <strong>Accuracy First</strong>
+            </div>
+            <span class="tool-value" id="detectorMode">mobilenet_v2</span>
+          </div>
+
+          <label class="sound-toggle" for="soundToggle">
+            <span>Alert Sound</span>
+            <input id="soundToggle" type="checkbox" checked />
+            <span class="toggle-track" aria-hidden="true">
+              <span class="toggle-knob"></span>
+            </span>
+          </label>
+
+          <label class="sensitivity-control" for="sensitivityRange">
+            <div class="tool-copy">
+              <span class="tool-label">Phone Sensitivity</span>
+              <strong>Lower threshold, more aggressive phone spotting</strong>
+            </div>
+            <div class="sensitivity-row">
+              <input
+                id="sensitivityRange"
+                class="range-input"
+                type="range"
+                min="8"
+                max="24"
+                step="1"
+                value="12"
+              />
+              <span class="tool-value" id="sensitivityValue">12%</span>
+            </div>
+          </label>
+        </div>
+      </header>
+
+      <section class="workspace-grid reveal">
+        <div class="panel workspace-panel">
+          <div class="section-copy">
+            <p class="section-label">Live Workspace</p>
+            <h2>Mirror camera feed with on-device object detection.</h2>
+          </div>
+
+          <div class="video-shell">
+            <video id="webcam" autoplay playsinline muted></video>
+            <canvas id="overlay"></canvas>
+
+            <div class="mask loading-mask" id="loadingMask">
+              <div class="spinner" aria-hidden="true"></div>
+              <p id="loadingMessage">Loading COCO-SSD model...</p>
+            </div>
+
+            <div class="mask idle-mask" id="idleMask">
+              <p class="idle-title">Session paused</p>
+              <p>Start a session to open the camera and begin tracking.</p>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <button class="button button-primary" id="startButton" disabled>
+              Start Session
+            </button>
+            <button class="button button-secondary" id="stopButton" disabled>
+              Stop Session
+            </button>
+            <div class="status-pill waiting" id="sessionStatus">Waiting</div>
+          </div>
+        </div>
+
+        <aside class="panel telemetry-panel">
+          <div class="section-copy">
+            <p class="section-label">Session Metrics</p>
+            <h2>Read the session like a control surface, not a report.</h2>
+          </div>
+
+          <div class="metric-stack">
+            <div class="metric-row">
+              <span>Focus Score</span>
+              <strong id="focusScore">100%</strong>
+            </div>
+            <div class="metric-row">
+              <span>Distraction Time</span>
+              <strong id="distractionTime">0:00</strong>
+            </div>
+            <div class="metric-row">
+              <span>Session Duration</span>
+              <strong id="sessionDuration">0:00</strong>
+            </div>
+            <div class="metric-row">
+              <span>Phone Detection Count</span>
+              <strong id="phoneDetections">0</strong>
+            </div>
+          </div>
+
+          <div class="session-note" id="sessionNote">
+            The model is loading. Detection begins after the start button turns
+            live.
+          </div>
+        </aside>
+      </section>
+
+      <section class="insight-grid reveal">
+        <div class="panel chart-panel">
+          <div class="section-copy">
+            <p class="section-label">Minute Breakdown</p>
+            <h2>Focused and distracted seconds stacked by minute.</h2>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="minuteChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel timeline-panel">
+          <div class="section-copy">
+            <p class="section-label">Focus Timeline</p>
+            <h2>One block every 10 seconds for a fast visual scan.</h2>
+          </div>
+          <div class="timeline-strip" id="timelineStrip"></div>
+          <p class="timeline-caption" id="timelineCaption">
+            Timeline blocks will build as the session progresses.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel history-panel reveal">
+        <div class="history-header">
+          <div class="section-copy">
+            <p class="section-label">Session History</p>
+            <h2>Server and local records stay visible side by side.</h2>
+          </div>
+
+          <button class="button button-secondary" id="clearHistoryButton">
+            Clear History
+          </button>
+        </div>
+
+        <div class="history-grid">
+          <div class="history-column">
+            <div class="history-title">
+              <span class="history-indicator history-server"></span>
+              <span>Server History</span>
+            </div>
+            <div class="history-list" id="serverHistory"></div>
+          </div>
+
+          <div class="history-column">
+            <div class="history-title">
+              <span class="history-indicator history-local"></span>
+              <span>Local History</span>
+            </div>
+            <div class="history-list" id="localHistory"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="toast" id="toast" role="status" aria-live="polite">
+      <strong>Phone Detected</strong>
+      <span>Stay focused and get back to the task.</span>
+    </aside>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
