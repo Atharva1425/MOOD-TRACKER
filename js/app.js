@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = "";
 
 const STORAGE_KEY = "deskfocus-local-history-v1";
 const DETECTION_INTERVAL_MS = 250;
